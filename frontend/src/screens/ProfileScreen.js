@@ -1,0 +1,237 @@
+import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
+import { logout, update } from '../actions/userActions';
+import { listMyOrders } from '../actions/orderActions';
+import { useDispatch, useSelector } from 'react-redux';
+import { Button, Form, FormGroup, Input, Label } from 'reactstrap';
+import { Card, ListGroup, ListGroupItem } from 'react-bootstrap'
+
+
+function ProfileScreen(props) {
+  const [name, setName] = useState('');
+  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState('');
+  const dispatch = useDispatch();
+
+  const userSignin = useSelector(state => state.userSignin);
+  const { userInfo } = userSignin;
+  
+  const handleLogout = () => {
+    dispatch(logout());
+    props.history.push("/signin");
+  }
+  const submitHandler = (e) => {
+    e.preventDefault();
+    dispatch(update({ userId: userInfo._id, email, name, password }))
+  }
+  const userUpdate = useSelector(state => state.userUpdate);
+  const { loading, success, error } = userUpdate;
+
+  const myOrderList = useSelector(state => state.myOrderList);
+  const { loading: loadingOrders, orders, error: errorOrders } = myOrderList;
+  useEffect(() => {
+    if (userInfo) {
+      console.log(userInfo.name)
+      setEmail(userInfo.email);
+      setName(userInfo.name);
+      setPassword(userInfo.password);
+    }
+    dispatch(listMyOrders());
+    return () => {
+
+    };
+  }, [userInfo])
+
+return (
+    <div className="content" style={{ backgroundColor: "#fff" }}>
+      <div className="container" style={{ width: 575, height: 400, marginTop: 60, backgroundColor: "#6600ff" }}>
+        <h1 style={{ color: "#fff", textAlign: "center" }}>Update Account</h1>
+        <Form
+          onSubmit={submitHandler}
+
+        >
+          <div
+            style={{ alignItems: "center", justifyContent: "center", textAlign: "center" }}
+          >
+            <FormGroup >
+              <Label
+                for="name"
+                style={{ color: "#fff" }}
+              >
+                <h4>
+                  Name
+                </h4>
+              </Label>
+              <Input
+                style={{ color: "#000", backgroundColor: "#fff" }}
+                type="text"
+                name="name"
+                color="#000"
+                placeholder="Enter Your Name"
+                size="lg"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+              />
+            </FormGroup>
+            <FormGroup >
+              <Label
+                for="name"
+                style={{ color: "#fff" }}
+              >
+                <h4>
+                  Email
+                </h4>
+              </Label>
+              <Input
+                style={{ color: "#000", backgroundColor: "#fff" }}
+                type="text"
+                name="name"
+                color="#000"
+                placeholder="Enter Your Email Address"
+                size="lg"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+              />
+            </FormGroup>
+            <FormGroup >
+              <Label
+                for="password"
+                style={{ color: "#fff" }}
+              >
+                <h4>
+                  Password
+                </h4>
+              </Label>
+              <Input
+                style={{ color: "#000", backgroundColor: "#fff" }}
+                type="password"
+                name="name"
+                color="#000"
+                placeholder="Enter Password"
+                size="lg"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
+            </FormGroup>
+            <div className="row">
+              <div className="col-6">
+             <Button
+            style={{
+              color: "#6600ff",
+              backgroundColor: "#ccb3ff"
+            }}
+            size="lg" block type="submit">
+            <b>Update</b>
+          </Button>
+              </div>
+              <div className="col-6">
+ <Button
+            style={{
+              color: "#6600ff",
+              backgroundColor: "#ccb3ff"
+            }}
+             onClick={handleLogout} 
+            size="lg" color="danger" block type="submit">
+            <b>Logout</b>
+          </Button>
+              </div>
+            </div>
+          </div>
+         
+        </Form>
+      </div>
+       <div className="container">
+          {
+        loadingOrders ? <div>Loading...</div> :
+          errorOrders ? <div>{errorOrders} </div> :
+        <Card style={{ backgroundColor: "#6600ff" }}>
+          <Card.Body>
+              <h3 style={{textAlign:"center", color:"#fff"}}>Order List</h3>
+            <table className="table">
+                  <thead style={{ textAlign: "center", color: "#fff" }}>
+                <tr>
+                  <th>ID</th>
+                  <th>DATE</th>
+                  <th>TOTAL</th>
+                  <th>PAID</th>
+                  <th>ACTIONS</th>
+                </tr>
+              </thead>
+              <tbody>
+                {orders.map(order => <tr key={order._id}>
+                  <td>{order._id}</td>
+                  <td>{order.createdAt}</td>
+                  <td>{order.totalPrice}</td>
+                  <td>{order.isPaid}</td>
+                  <td>
+                    <Link to={"/order/" + order._id}>DETAILS</Link>
+                  </td>
+                </tr>)}
+              </tbody>
+            </table>
+
+          </Card.Body>
+
+        </Card>
+}
+          </div>
+    </div >
+  )
+  
+
+  // return <div className="profile">
+  //   <div className="profile-info">
+  //     <div className="form">
+  //       <form onSubmit={submitHandler} >
+  //         <ul className="form-container">
+  //           <li>
+  //             <h2>User Profile</h2>
+  //           </li>
+  //           <li>
+  //             {loading && <div>Loading...</div>}
+  //             {error && <div>{error}</div>}
+  //             {success && <div>Profile Saved Successfully.</div>}
+  //           </li>
+  //           <li>
+  //             <label htmlFor="name">
+  //               Name
+  //         </label>
+  //             <input value={name} type="name" name="name" id="name" onChange={(e) => setName(e.target.value)}>
+  //             </input>
+  //           </li>
+  //           <li>
+  //             <label htmlFor="email">
+  //               Email
+  //         </label>
+  //             <input value={email} type="email" name="email" id="email" onChange={(e) => setEmail(e.target.value)}>
+  //             </input>
+  //           </li>
+  //           <li>
+  //             <label htmlFor="password">Password</label>
+  //             <input value={password} type="password" id="password" name="password" onChange={(e) => setPassword(e.target.value)}>
+  //             </input>
+  //           </li>
+
+  //           <li>
+  //             <button type="submit" className="button primary">Update</button>
+  //           </li>
+  //           <li>
+  //             <button type="button" onClick={handleLogout} className="button secondary full-width">Logout</button>
+  //           </li>
+
+  //         </ul>
+  //       </form>
+  //     </div>
+  //   </div>
+
+
+
+  //   <div className="profile-orders content-margined">
+      
+            
+      
+  //   </div>
+  // </div>
+}
+
+export default ProfileScreen;
